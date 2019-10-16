@@ -1,5 +1,5 @@
 # Colored Nested Logrus Formatter
-[![Go Report Card](https://goreportcard.com/badge/github.com/DaRealFreak/colored-nested-formatter)](https://goreportcard.com/report/github.com/DaRealFreak/colored-nested-formatter)
+[![Build Status](https://travis-ci.com/DaRealFreak/colored-nested-formatter.svg?branch=master)](https://travis-ci.com/DaRealFreak/colored-nested-formatter) [![Go Report Card](https://goreportcard.com/badge/github.com/DaRealFreak/colored-nested-formatter)](https://goreportcard.com/report/github.com/DaRealFreak/colored-nested-formatter) [![Coverage Status](https://coveralls.io/repos/github/DaRealFreak/colored-nested-formatter/badge.svg?branch=master)](https://coveralls.io/github/DaRealFreak/colored-nested-formatter?branch=master) ![License](https://img.shields.io/github/license/DaRealFreak/colored-nested-formatter )
 
 Human readable log formatter for the logrus library. Option to define custom colors for specific field matches.
 
