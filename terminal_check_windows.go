@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/mattn/go-colorable"
 	"github.com/mattn/go-isatty"
 )
 
@@ -16,9 +15,7 @@ func (f *Formatter) isTerminal(writer io.Writer) bool {
 	switch out := writer.(type) {
 	case *os.File:
 		return isatty.IsCygwinTerminal(out.Fd())
-	case *colorable.Writer:
-		return isatty.IsTerminal(os.Stdout.Fd())
 	default:
-		return false
+		return isatty.IsTerminal(os.Stdout.Fd())
 	}
 }
