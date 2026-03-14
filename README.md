@@ -1,33 +1,38 @@
-# Colored Nested Logrus Formatter
-[![Build Status](https://travis-ci.com/DaRealFreak/colored-nested-formatter.svg?branch=master)](https://travis-ci.com/DaRealFreak/colored-nested-formatter) [![Go Report Card](https://goreportcard.com/badge/github.com/DaRealFreak/colored-nested-formatter)](https://goreportcard.com/report/github.com/DaRealFreak/colored-nested-formatter) [![Coverage Status](https://coveralls.io/repos/github/DaRealFreak/colored-nested-formatter/badge.svg?branch=master)](https://coveralls.io/github/DaRealFreak/colored-nested-formatter?branch=master) ![License](https://img.shields.io/github/license/DaRealFreak/colored-nested-formatter )
+# Colored Nested Slog Handler
+[![tests](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/tests.yml/badge.svg)](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/tests.yml) [![build](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/build.yml/badge.svg)](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/build.yml) [![golangci-lint](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/DaRealFreak/colored-nested-formatter/actions/workflows/golangci-lint.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/DaRealFreak/colored-nested-formatter/v2)](https://goreportcard.com/report/github.com/DaRealFreak/colored-nested-formatter/v2) ![License](https://img.shields.io/github/license/DaRealFreak/colored-nested-formatter)
 
-Human readable log formatter for the logrus library. Option to define custom colors for specific field matches.
+Human readable log handler for the standard library `log/slog` package. Option to define custom colors for specific field matches. Drop-in successor to [colored-nested-formatter v1](https://github.com/DaRealFreak/colored-nested-formatter/tree/v1.0.1) (logrus).
+
+## Installation
+```bash
+go get github.com/DaRealFreak/colored-nested-formatter/v2
+```
 
 ## Usage
-You can either register it for every log or create your new log instance and use the SetFormatter function of the logrus Log.
-
-Example code:
-
 ```go
 package main
 
 import (
-	formatter "github.com/DaRealFreak/colored-nested-formatter"
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"time"
+
+	formatter "github.com/DaRealFreak/colored-nested-formatter/v2"
+	"github.com/mattn/go-colorable"
 )
 
 func main() {
-	log := logrus.New()
-	log.SetFormatter(&formatter.Formatter{
-		DisableColors:            false,
-		ForceColors:              false,
-		DisableTimestamp:         false,
-		UseUppercaseLevel:        false,
+	handler := formatter.NewHandler(colorable.NewColorableStdout(), &formatter.Handler{
+		DisableColors:           false,
+		ForceColors:             false,
+		DisableTimestamp:        false,
+		UseUppercaseLevel:       false,
 		UseTimePassedAsTimestamp: false,
-		TimestampFormat:          time.StampMilli,
-		PadAllLogEntries:         true,
+		TimestampFormat:         time.StampMilli,
+		PadAllLogEntries:        true,
+		Level:                   slog.LevelDebug,
 	})
+
+	logger := slog.New(handler)
 
 	formatter.AddFieldMatchColorScheme("color", &formatter.FieldMatch{
 		Value: "blue",
@@ -38,24 +43,42 @@ func main() {
 		Color: "232:34",
 	})
 
-	log.Info("normal info log entry")
-	log.WithField("color", "unregistered").Infof("normal colored not nested info log entry")
-	log.WithField("color", "blue").Info("blue colored nested info log entry")
-	log.WithFields(logrus.Fields{"color": "blue", "moreColorFields": "green"}).Info(
-		"blue and green colored nested info log entry",
-	)
+	logger.Info("normal info log entry")
+	logger.Info("normal colored not nested info log entry", "color", "unregistered")
+	logger.Info("blue colored nested info log entry", "color", "blue")
+	logger.Info("blue and green colored nested info log entry", "color", "blue", "moreColorFields", "green")
 }
 ```
 
-The above code will output this:
-![Example Output](example_output.png)
+### Using WithAttrs (replaces logrus WithField)
+```go
+// create a sub-logger with a precomputed field (like logrus.WithField)
+moduleLogger := slog.New(handler).With("module", "deviantart.com")
+moduleLogger.Info("downloading updates")
+moduleLogger.Warn("rate limit approaching")
+```
 
+### Setting as default logger
+```go
+slog.SetDefault(slog.New(handler))
+
+// then use the global functions
+slog.Info("message", "module", "pixiv.net")
+```
+
+## Migration from v1 (logrus)
+
+| v1 (logrus) | v2 (slog) |
+|---|---|
+| `logrus.WithField("k", v).Info("msg")` | `slog.Info("msg", "k", v)` |
+| `logrus.WithFields(logrus.Fields{...}).Info("msg")` | `slog.Info("msg", "k1", v1, "k2", v2)` |
+| `log.SetFormatter(&formatter.Formatter{...})` | `slog.SetDefault(slog.New(formatter.NewHandler(w, &formatter.Handler{...})))` |
+| `formatter.AddFieldMatchColorScheme(...)` | `formatter.AddFieldMatchColorScheme(...)` (unchanged) |
 
 ## Configuration
-You have multiple configuration options for the formatter for whatever use case you need it for:
-```
-type Formatter struct {
-	// timestamp formatting, default is time.RFC3339
+```go
+type Handler struct {
+	// timestamp formatting, default is time.StampMilli
 	TimestampFormat string
 	// color schema for messages
 	ColorSchema *ColorSchema
@@ -71,11 +94,25 @@ type Formatter struct {
 	UseUppercaseLevel bool
 	// reserves space for all log entries for all registered matches
 	PadAllLogEntries bool
+	// minimum log level (default: slog.LevelDebug)
+	Level slog.Level
 }
 ```
 
+### Custom log levels
+`slog` doesn't have `Fatal` and `Panic` levels natively. This handler maps them to custom levels for color support:
+
+| Level | slog value | Color |
+|---|---|---|
+| Debug | `slog.LevelDebug` | blue |
+| Info | `slog.LevelInfo` | green |
+| Warn | `slog.LevelWarn` | yellow |
+| Error | `slog.LevelError` | red |
+| Fatal | `slog.LevelError + 2` | red |
+| Panic | `slog.LevelError + 4` | red |
+
 ## Development
-Want to contribute? Great!  
+Want to contribute? Great!
 I'm always glad hearing about bugs or pull requests.
 
 ## License
