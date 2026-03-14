@@ -10,14 +10,14 @@ import (
 
 func TestHandle(t *testing.T) {
 	handler := NewHandler(colorable.NewColorableStdout(), &Handler{
-		DisableColors:           false,
-		ForceColors:             true,
-		DisableTimestamp:        false,
-		UseUppercaseLevel:       false,
+		DisableColors:            false,
+		ForceColors:              true,
+		DisableTimestamp:         false,
+		UseUppercaseLevel:        false,
 		UseTimePassedAsTimestamp: false,
-		TimestampFormat:         time.StampMilli,
-		PadAllLogEntries:        true,
-		Level:                   slog.LevelDebug,
+		TimestampFormat:          time.StampMilli,
+		PadAllLogEntries:         true,
+		Level:                    slog.LevelDebug,
 	})
 
 	logger := slog.New(handler)

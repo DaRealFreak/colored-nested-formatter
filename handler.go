@@ -172,17 +172,17 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 
 func (h *Handler) clone() *Handler {
 	return &Handler{
-		TimestampFormat:         h.TimestampFormat,
-		ColorSchema:             h.ColorSchema,
-		DisableColors:           h.DisableColors,
-		ForceColors:             h.ForceColors,
-		DisableTimestamp:        h.DisableTimestamp,
+		TimestampFormat:          h.TimestampFormat,
+		ColorSchema:              h.ColorSchema,
+		DisableColors:            h.DisableColors,
+		ForceColors:              h.ForceColors,
+		DisableTimestamp:         h.DisableTimestamp,
 		UseTimePassedAsTimestamp: h.UseTimePassedAsTimestamp,
-		UseUppercaseLevel:       h.UseUppercaseLevel,
-		PadAllLogEntries:        h.PadAllLogEntries,
-		Level:                   h.Level,
-		writer:                  h.writer,
-		preAttrs:                append([]slog.Attr{}, h.preAttrs...),
+		UseUppercaseLevel:        h.UseUppercaseLevel,
+		PadAllLogEntries:         h.PadAllLogEntries,
+		Level:                    h.Level,
+		writer:                   h.writer,
+		preAttrs:                 append([]slog.Attr{}, h.preAttrs...),
 	}
 }
 
