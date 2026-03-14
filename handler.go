@@ -140,7 +140,7 @@ func (h *Handler) Handle(_ context.Context, record slog.Record) error {
 		if err := h.addPadding(out); err != nil {
 			return err
 		}
-		if _, err := out.WriteString(fmt.Sprintf("%s=%v", colorFunc(fieldKey), fieldValue)); err != nil {
+		if _, err := fmt.Fprintf(out, "%s=%v", colorFunc(fieldKey), fieldValue); err != nil {
 			return err
 		}
 	}

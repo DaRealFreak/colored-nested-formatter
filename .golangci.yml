@@ -1,12 +1,6 @@
-version: "2"
-linters:
-  settings:
-    misspell:
-      locale: US
-  exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
+linters-settings:
+  misspell:
+    locale: US
+
+issues:
+  exclude-use-default: true
