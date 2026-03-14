@@ -1,6 +1,6 @@
-linters-settings:
-  misspell:
-    locale: US
+version: "2"
 
-issues:
-  exclude-use-default: true
+linters:
+  settings:
+    misspell:
+      locale: US
